@@ -35,18 +35,12 @@ namespace ParticleSystemV._3
         {
             base.Initialize();
         }
-
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             Assets.Load(GraphicsDevice, Content);
             ParticleManager.Create();
-        }
-
-        protected override void UnloadContent()
-        {
-            
         }
 
         protected override void Update(GameTime gameTime)
@@ -56,23 +50,12 @@ namespace ParticleSystemV._3
 
             EingabenAnzeige.Update();
 
-            if (GameValues.MultiThreading)
-            {
-                ThreadPool.QueueUserWorkItem(new WaitCallback(ParticleManager.ThreadedUpdate0));
-                ThreadPool.QueueUserWorkItem(new WaitCallback(ParticleManager.ThreadedUpdate1));
-                ThreadPool.QueueUserWorkItem(new WaitCallback(ParticleManager.ThreadedUpdate2));
-                ThreadPool.QueueUserWorkItem(new WaitCallback(ParticleManager.ThreadedUpdate3));
-            }
-            else
-            {
-                ParticleManager.Update();
-            }
+            ParticleManager.Update(GraphicsDevice);
 
             FPSCounter.Update(gameTime);
 
             base.Update(gameTime);
         }
-
         protected override void Draw(GameTime gameTime)
         {
             if (GameValues.Bloom)
@@ -95,10 +78,6 @@ namespace ParticleSystemV._3
 
                 case 1:
                     ParticleManager.DrawAsArrows(spriteBatch);
-                    break;
-
-                case 2:
-                    ParticleManager.DrawAsWater(spriteBatch);
                     break;
             }
 

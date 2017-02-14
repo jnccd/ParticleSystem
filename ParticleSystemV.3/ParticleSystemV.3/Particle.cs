@@ -52,7 +52,6 @@ namespace ParticleSystemV._3
 
             Pos += Vel;
         }
-
         public new void Draw(SpriteBatch spriteBatch)
         {
             if (Positive)
@@ -89,7 +88,6 @@ namespace ParticleSystemV._3
                 Vel.Y -= ForceMagnitude * (float)Math.Cos(ForceAngle) * 0.1f;
             }
         }
-
         public void MarkerUpdate(List<Marker> ListOfMarkers, List<Particle> ListOfParticles)
         {
             for (int i1 = 0; i1 < ListOfMarkers.Count; i1++)
@@ -158,31 +156,46 @@ namespace ParticleSystemV._3
     {
         public Vector2 Pos;
         public Vector2 Vel;
+        public Color C;
+        public Vector2 OriginalPos;
 
         public float PullLength;
         public float ForceMagnitude;
         public float ForceAngle;
 
+        RenderTarget2D RT;
+
         public Particle(Vector2 Pos, Vector2 Vel)
         {
             this.Pos = Pos;
             this.Vel = Vel;
+            C = Color.LimeGreen;
+            OriginalPos = Pos;
         }
-
+        public Particle(Vector2 Pos, Vector2 Vel, Color C)
+        {
+            this.Pos = Pos;
+            this.Vel = Vel;
+            this.C = C;
+            OriginalPos = Pos;
+        }
         public Particle(int PosX, int PosY, int VelX, int VelY)
         {
             Pos.X = PosX;
             Pos.Y = PosY;
             Vel.X = VelX;
             Vel.Y = VelY;
+            C = Color.LimeGreen;
+            OriginalPos = Pos;
         }
-
         public Particle(int PosX, int PosY, int VelX, int VelY, float Depth, float DepthVel)
         {
             Pos.X = PosX;
             Pos.Y = PosY;
             Vel.X = VelX;
             Vel.Y = VelY;
+            C = Color.LimeGreen;
+            OriginalPos = Pos;
         }
 
         public void GetPulledBy(Vector2 Puller, bool Direction)
@@ -208,7 +221,6 @@ namespace ParticleSystemV._3
                 Vel.Y -= ForceMagnitude * (float)Math.Cos(ForceAngle);
             }
         }
-
         public void GetPulledBy(Vector2 Puller, bool Direction, float Strength)
         {
             PullLength = Vector2.Distance(Puller, Pos);
@@ -234,7 +246,6 @@ namespace ParticleSystemV._3
                 Vel.Y -= ForceMagnitude * (float)Math.Cos(ForceAngle);
             }
         }
-
         public void OrbitAround(Vector2 Point, bool Direction)
         {
             PullLength = Vector2.Distance(Point, Pos);
@@ -258,6 +269,21 @@ namespace ParticleSystemV._3
 
         public void Update()
         {
+            if (ControlHandler.CurKS.IsKeyDown(Keys.Tab) && ParticleManager.Timer % 4 == 0)
+            {
+                if (Pos.X > OriginalPos.X - 10 && Pos.X < OriginalPos.X + 10 && Pos.Y > OriginalPos.Y - 10 && Pos.Y < OriginalPos.Y + 10)
+                {
+                    Pos = OriginalPos;
+                    Vel = Vector2.Zero;
+                }
+                else
+                {
+                    Vector2 Diff = (OriginalPos - Pos);
+                    Diff.Normalize();
+                    Vel = Diff * 3f;
+                }
+            }
+
             if (GameValues.FrictionEnabled)
             {
                 Vel.X /= GameValues.Friction;
@@ -286,25 +312,25 @@ namespace ParticleSystemV._3
                 }
             }
 
-            //if (Pos.X < 0)
-            //{
-            //    Vel.X *= -1;
-            //}
+            if (Pos.X < 0)
+            {
+                Vel.X *= -1;
+            }
 
-            //if (Pos.X > GameValues.ScreenSize.X)
-            //{
-            //    Vel.X *= -1;
-            //}
+            if (Pos.X > GameValues.ScreenSize.X)
+            {
+                Vel.X *= -1;
+            }
 
-            //if (Pos.Y < 0)
-            //{
-            //    Vel.Y *= -1;
-            //}
+            if (Pos.Y < 0)
+            {
+                Vel.Y *= -1;
+            }
 
-            //if (Pos.Y > GameValues.ScreenSize.Y)
-            //{
-            //    Vel.Y *= -1f;
-            //}
+            if (Pos.Y > GameValues.ScreenSize.Y)
+            {
+                Vel.Y *= -1f;
+            }
 
             Pos += Vel;
 
@@ -316,23 +342,34 @@ namespace ParticleSystemV._3
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Assets.Default, Pos + ParticleManager.Camera, Color.LimeGreen * ParticleManager.ParticleVisibility);
+            spriteBatch.Draw(Assets.Default, Pos + ParticleManager.Camera, C * ParticleManager.ParticleVisibility);
         }
-        
         public void DrawAsArrow(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Assets.Arrow, Pos + ParticleManager.Camera, null, Color.LimeGreen * ParticleManager.ParticleVisibility, (float)Math.Atan2(Vel.Y, Vel.X), 
+            spriteBatch.Draw(Assets.Arrow, Pos + ParticleManager.Camera, null, C * ParticleManager.ParticleVisibility, (float)Math.Atan2(Vel.Y, Vel.X), 
                 new Vector2(Assets.Arrow.Width / 2, Assets.Arrow.Height / 2), new Vector2(Vel.LengthSquared() / 1000, 0.02f), SpriteEffects.None, 0);
         }
-
         public void DrawAsBigCircle(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Assets.BigCircle, new Rectangle((int)Pos.X - GameValues.WaterSize / 2 + (int)ParticleManager.Camera.X, (int)Pos.Y - GameValues.WaterSize / 2 + (int)ParticleManager.Camera.Y, GameValues.WaterSize, GameValues.WaterSize), Color.White);
         }
-
         public void DrawAsSmallerCircle(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Assets.SmallerCircle, new Rectangle((int)Pos.X - GameValues.WaterSize / 2 + (int)ParticleManager.Camera.X, (int)Pos.Y - GameValues.WaterSize / 2 + (int)ParticleManager.Camera.Y, GameValues.WaterSize, GameValues.WaterSize), Color.White);
+        }
+        public Texture2D DrawAsLight(SpriteBatch SB, GraphicsDevice GD)
+        {
+            if (RT == null)
+                RT = new RenderTarget2D(GD, (int)GameValues.ScreenSize.X, (int)GameValues.ScreenSize.Y);
+            
+            GD.SetRenderTarget(RT);
+            GD.Clear(Color.Transparent);
+            SB.Begin(SpriteSortMode.Immediate, BlendState.Additive);
+            Assets.Light.Parameters["Pos"].SetValue(Pos);
+            Assets.Light.CurrentTechnique.Passes[0].Apply();
+            SB.Draw(Assets.Default, new Rectangle(0, 0, (int)GameValues.ScreenSize.X, (int)GameValues.ScreenSize.Y), Color.Black);
+            SB.End();
+            return RT;
         }
     }
 }
